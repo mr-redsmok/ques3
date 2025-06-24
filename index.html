@@ -1558,7 +1558,7 @@
                         "Controlar o espaço em disco.",
                         "Gerenciar senhas."
                     ],
-                    correct: "Guardar temporariamente arquivos e pastas excluídos, permitindo a recuperação antes da exclusão definitiva."
+                    correct: "Guardar temporariamente arquivos e pastas e pastas excluídos, permitindo a recuperação antes da exclusão definitiva."
                 },
                 {
                     question: "O que é 'phishing' na internet?",
@@ -1605,58 +1605,58 @@
         const totalQuestionsDisplay = document.getElementById('total-questions-display');
         const restartFromFinalButton = document.getElementById('restart-from-final-button');
 
-        let userAnswers = []; // Stores user answers [questionIndex] = selectedOptionIndex
-        let totalScore = 0; // Stores total score
-        let flatQuestions = []; // Flat array of all questions for easy indexing
+        let userAnswers = []; // Armazena as respostas do usuário [questionIndex] = selectedOptionIndex
+        let totalScore = 0; // Armazena a pontuação total
+        let flatQuestions = []; // Array plano de todas as questões para facilitar a indexação
 
         /**
-         * Initializes the flat array of questions and the user answer array.
-         * Should be called on page load and when restarting the quiz.
+         * Inicializa o array plano de questões e o array de respostas do usuário.
+         * Deve ser chamado ao carregar a página e ao reiniciar o simulado.
          */
         function initializeQuiz() {
             flatQuestions = [];
             for (const discipline in allQuestions) {
                 flatQuestions = flatQuestions.concat(allQuestions[discipline]);
             }
-            userAnswers = Array(flatQuestions.length).fill(null); // Initialize all answers as null
+            userAnswers = Array(flatQuestions.length).fill(null); // Inicializa todas as respostas como nulas
             totalScore = 0;
             totalQuestionsDisplay.textContent = flatQuestions.length;
         }
 
         /**
-         * Renders all questions on the page.
-         * Clears the questions container before rendering to avoid duplicates.
+         * Renderiza todas as questões na página.
+         * Limpa o contêiner de questões antes de renderizar para evitar duplicações.
          */
         function renderAllQuestions() {
-            questionsContainer.innerHTML = ''; // Clears the container
+            questionsContainer.innerHTML = ''; // Limpa o contêiner
 
-            let globalQuestionNumber = 1; // Global counter for question number
+            let globalQuestionNumber = 1; // Contador global para o número da questão
 
             for (const disciplineName in allQuestions) {
                 const disciplineQuestions = allQuestions[disciplineName];
 
-                // Creates the discipline title
+                // Cria o título da disciplina
                 const disciplineTitle = document.createElement('h2');
                 disciplineTitle.className = 'discipline-title';
                 disciplineTitle.textContent = disciplineName;
                 questionsContainer.appendChild(disciplineTitle);
 
                 disciplineQuestions.forEach((q, localIndex) => {
-                    const questionIndex = flatQuestions.indexOf(q); // Finds the global index of the question
+                    const questionIndex = flatQuestions.indexOf(q); // Encontra o índice global da questão
 
                     const questionCard = document.createElement('div');
                     questionCard.className = 'question-card';
-                    questionCard.setAttribute('data-question-index', questionIndex); // Stores the global index of the question
+                    questionCard.setAttribute('data-question-index', questionIndex); // Armazena o índice global da questão
 
-                    // Adds the question text with the global number
+                    // Adiciona o texto da questão com o número global
                     const questionText = document.createElement('p');
                     questionText.className = 'question-text';
                     questionText.textContent = `${globalQuestionNumber}. ${q.question}`;
                     questionCard.appendChild(questionText);
 
-                    // Creates a container for the options
+                    // Cria um container para as opções
                     const optionsDiv = document.createElement('div');
-                    optionsDiv.className = 'options space-y-2'; // Spacing between options
+                    optionsDiv.className = 'options space-y-2'; // Espaçamento entre as opções
 
                     q.options.forEach((option, optIndex) => {
                         const optionId = `q${questionIndex}-opt${optIndex}`;
@@ -1666,20 +1666,20 @@
 
                         const input = document.createElement('input');
                         input.type = 'radio';
-                        input.name = `question-${questionIndex}`; // Unique name for each radio group (based on global index)
+                        input.name = `question-${questionIndex}`; // Nome único para cada grupo de rádio (baseado no índice global)
                         input.id = optionId;
-                        input.value = optIndex; // The value is the option index
+                        input.value = optIndex; // O valor é o índice da opção
                         input.className = 'option-input';
 
-                        // Marks the option if it has already been selected by the user
+                        // Marca a opção se ela já foi selecionada pelo usuário
                         if (userAnswers[questionIndex] === optIndex) {
                             input.checked = true;
                         }
 
-                        // Adds listener to save the user's answer
+                        // Adiciona listener para salvar a resposta do usuário
                         input.addEventListener('change', (event) => {
                             userAnswers[questionIndex] = parseInt(event.target.value);
-                            // Clears feedback from previous answers when selecting a new option
+                            // Limpa feedback de respostas anteriores ao selecionar nova opção
                             const feedbackElement = questionCard.querySelector('.feedback');
                             if (feedbackElement) {
                                 feedbackElement.classList.remove('correct', 'incorrect');
@@ -1688,13 +1688,13 @@
                         });
 
                         label.appendChild(input);
-                        label.appendChild(document.createTextNode(` ${String.fromCharCode(97 + optIndex)}) ${option}`)); // Option (a, b, c...)
+                        label.appendChild(document.createTextNode(` ${String.fromCharCode(97 + optIndex)}) ${option}`)); // Opção (a, b, c...)
                         optionsDiv.appendChild(label);
                     });
 
                     questionCard.appendChild(optionsDiv);
 
-                    // Adds an element for feedback (correct/incorrect)
+                    // Adiciona um elemento para feedback (correto/incorreto)
                     const feedbackDiv = document.createElement('div');
                     feedbackDiv.className = 'feedback';
                     questionCard.appendChild(feedbackDiv);
@@ -1702,35 +1702,84 @@
                     questionsContainer.appendChild(questionCard);
                     globalQuestionNumber++;
                 });
+
+                // Adiciona o botão de verificar respostas da seção ao final de cada disciplina
+                const checkSectionButton = document.createElement('button');
+                checkSectionButton.className = 'button button-secondary mt-4 mb-8 mx-auto'; // Centraliza o botão
+                checkSectionButton.textContent = `Verificar Respostas da Seção de ${disciplineName}`;
+                checkSectionButton.setAttribute('data-discipline', disciplineName);
+                checkSectionButton.addEventListener('click', (event) => {
+                    const clickedDisciplineName = event.target.getAttribute('data-discipline');
+                    checkDisciplineAnswers(clickedDisciplineName);
+                });
+                questionsContainer.appendChild(checkSectionButton);
             }
         }
 
         /**
-         * Checks all user answers, calculates the score
-         * and displays feedback.
+         * Verifica as respostas para uma disciplina específica e exibe o feedback.
+         * Não afeta o score geral nem desabilita os botões de rádio.
+         * @param {string} disciplineName - O nome da disciplina a ser verificada.
+         */
+        function checkDisciplineAnswers(disciplineName) {
+            const disciplineQuestions = allQuestions[disciplineName];
+            
+            disciplineQuestions.forEach((q) => {
+                const questionIndex = flatQuestions.indexOf(q); // Encontra o índice global da questão
+                const questionCard = questionsContainer.querySelector(`[data-question-index="${questionIndex}"]`);
+                const feedbackDiv = questionCard.querySelector('.feedback');
+                feedbackDiv.style.display = 'block'; // Garante que o feedback div está visível
+
+                const selectedOptionIndex = userAnswers[questionIndex];
+
+                if (selectedOptionIndex === null) {
+                    feedbackDiv.textContent = 'Você não selecionou uma resposta para esta questão.';
+                    feedbackDiv.className = 'feedback incorrect';
+                    questionCard.classList.add('border-red-400', 'border-2');
+                } else {
+                    const selectedAnswer = q.options[selectedOptionIndex];
+                    questionCard.classList.remove('border-red-400', 'border-2'); // Remove borda vermelha se houver
+
+                    feedbackDiv.textContent = `Resposta Correta: ${q.correct}`;
+
+                    if (selectedAnswer === q.correct) {
+                        feedbackDiv.classList.remove('incorrect');
+                        feedbackDiv.classList.add('correct');
+                    } else {
+                        feedbackDiv.classList.remove('correct');
+                        feedbackDiv.classList.add('incorrect');
+                    }
+                }
+            });
+        }
+
+
+        /**
+         * Verifica todas as respostas do usuário, calcula a pontuação
+         * e exibe o feedback. Desabilita todos os rádios após a verificação final.
          */
         function checkAllAnswers() {
             totalScore = 0;
-            let allAnswered = true; // Flag to check if all questions have been answered
+            let allAnswered = true; // Flag para verificar se todas as perguntas foram respondidas
 
             flatQuestions.forEach((q, index) => {
                 const questionCard = questionsContainer.querySelector(`[data-question-index="${index}"]`);
                 const feedbackDiv = questionCard.querySelector('.feedback');
-                feedbackDiv.style.display = 'block'; // Ensures the feedback div is visible
+                feedbackDiv.style.display = 'block'; // Garante que o feedback div está visível
 
                 const selectedOptionIndex = userAnswers[index];
 
                 if (selectedOptionIndex === null) {
-                    allAnswered = false; // Not all questions have been answered
+                    allAnswered = false; // Nem todas as perguntas foram respondidas
                     feedbackDiv.textContent = 'Você não selecionou uma resposta para esta questão.';
                     feedbackDiv.className = 'feedback incorrect';
-                    // Adds a visual class to indicate that the question has not been answered
+                    // Adiciona uma classe visual para indicar que a questão não foi respondida
                     questionCard.classList.add('border-red-400', 'border-2');
                 } else {
                     const selectedAnswer = q.options[selectedOptionIndex];
-                    questionCard.classList.remove('border-red-400', 'border-2'); // Removes red border if present
+                    questionCard.classList.remove('border-red-400', 'border-2'); // Remove borda vermelha se houver
 
-                    // Displays the correct answer in the feedback
+                    // Exibe a resposta correta no feedback
                     feedbackDiv.textContent = `Resposta Correta: ${q.correct}`;
 
                     if (selectedAnswer === q.correct) {
@@ -1741,26 +1790,26 @@
                         feedbackDiv.classList.remove('correct');
                         feedbackDiv.classList.add('incorrect');
                     }
-
-                    // Disables the radios after checking to prevent changes
-                    const radios = questionCard.querySelectorAll('input[type="radio"]');
-                    radios.forEach(radio => radio.disabled = true);
                 }
+
+                // Desabilita os radios após a verificação final
+                const radios = questionCard.querySelectorAll('input[type="radio"]');
+                radios.forEach(radio => radio.disabled = true);
             });
 
             if (!allAnswered) {
-                // If not all questions have been answered, display a warning and do not show the final screen
+                // Se nem todas as perguntas foram respondidas, exibir um aviso e não mostrar a tela final
                 alert('Por favor, responda a todas as questões antes de finalizar o simulado.');
                 return;
             }
 
             scoreDisplay.textContent = totalScore;
             finalScreen.classList.remove('hidden');
-            submitAllButton.disabled = true; // Disables the submit button after submission
+            submitAllButton.disabled = true; // Desabilita o botão de finalizar após a submissão
         }
 
         /**
-         * Exports questions, options, and correct answers to a text file.
+         * Exporta as questões, opções e respostas corretas para um arquivo de texto.
          */
         function exportQuestions() {
             let exportContent = `--- Simulado Recepcionista - Gabarito ---\n\n`;
@@ -1778,7 +1827,7 @@
                 });
             }
 
-            // Creates a Blob with the content and a download link
+            // Cria um Blob com o conteúdo e um link para download
             const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -1791,20 +1840,20 @@
         // Event Listeners
         submitAllButton.addEventListener('click', checkAllAnswers);
         restartButton.addEventListener('click', () => {
-            initializeQuiz(); // Re-initializes everything
-            finalScreen.classList.add('hidden'); // Hides the final screen
-            submitAllButton.disabled = false; // Re-enables the submit button
-            renderAllQuestions(); // Rerenders to clear selections and feedback
+            initializeQuiz(); // Re-inicializa tudo
+            finalScreen.classList.add('hidden'); // Esconde a tela final
+            submitAllButton.disabled = false; // Re-habilita o botão de finalizar
+            renderAllQuestions(); // Renderiza novamente para limpar seleções e feedback
         });
         exportButton.addEventListener('click', exportQuestions);
         restartFromFinalButton.addEventListener('click', () => {
-            initializeQuiz(); // Re-initializes everything
-            finalScreen.classList.add('hidden'); // Hides the final screen
-            submitAllButton.disabled = false; // Re-enables the submit button
-            renderAllQuestions(); // Rerenders to clear selections and feedback
+            initializeQuiz(); // Re-inicializa tudo
+            finalScreen.classList.add('hidden'); // Esconde a tela final
+            submitAllButton.disabled = false; // Re-habilita o botão de finalizar
+            renderAllQuestions(); // Renderiza novamente para limpar seleções e feedback
         });
 
-        // Initialization on page load
+        // Inicialização ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             initializeQuiz();
             renderAllQuestions();
