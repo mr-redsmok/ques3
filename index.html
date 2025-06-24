@@ -145,6 +145,12 @@
             color: #991b1b; /* Vermelho escuro */
             display: block;
         }
+        /* Novo estilo para questões não respondidas */
+        .feedback.unanswered {
+            background-color: #fef3c7; /* Amarelo claro */
+            color: #92400e; /* Laranja escuro */
+            display: block;
+        }
 
         /* Estilos para a tela final de resultados */
         #final-screen {
@@ -253,7 +259,9 @@
 
         <div id="final-screen" class="hidden">
             <h2 class="text-3xl font-extrabold text-blue-700 mb-4">Simulado Concluído!</h2>
-            <p class="text-xl text-gray-700 mb-6">Você acertou <span id="score-display" class="font-bold text-blue-600">0</span> de <span id="total-questions-display" class="font-bold text-blue-600">0</span> questões.</p>
+            <p class="text-xl text-gray-700 mb-6">Você acertou <span id="score-display" class="font-bold text-blue-600">0</span> de <span id="total-questions-display" class="font-bold text-blue-600">0</span> questões respondidas.</p>
+            <p class="text-lg text-gray-600 mb-6">Total de questões no simulado: <span id="total-questions-count" class="font-bold text-blue-600">0</span></p>
+
             <button id="restart-from-final-button" class="button button-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12H20C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C14.0935 4 16.0028 4.7925 17.3917 6.10515L15 8H22V1H20L17.5029 3.49712C15.6582 1.65245 13.0183 0.652344 10.1557 0.652344C5.16335 0.652344 1.15234 4.66335 1.15234 9.6557C1.15234 14.648 5.16335 18.659 10.1557 18.659C13.0183 18.659 15.6582 17.659 17.5029 15.8143L20 18.3114C17.7011 20.6105 14.9961 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2Z" fill="currentColor"></path></svg>
                 Fazer Novamente
@@ -295,10 +303,10 @@
                         "Fui a cidade de Taguaí.",
                         "Referiu-se a diretora.",
                         "Ele foi a pé para o trabalho.",
-                        "Sairemos as sete horas.",
+                        "Sairemos às sete horas.",
                         "Entregou o presente a ela."
                     ],
-                    correct: "Sairemos as sete horas."
+                    correct: "Sairemos às sete horas."
                 },
                 {
                     question: "Qual figura de linguagem está presente na frase: 'Rios de dinheiro foram gastos na obra.'?",
@@ -1558,7 +1566,7 @@
                         "Controlar o espaço em disco.",
                         "Gerenciar senhas."
                     ],
-                    correct: "Guardar temporariamente arquivos e pastas e pastas excluídos, permitindo a recuperação antes da exclusão definitiva."
+                    correct: "Guardar temporariamente arquivos e pastas excluídos, permitindo a recuperação antes da exclusão definitiva."
                 },
                 {
                     question: "O que é 'phishing' na internet?",
@@ -1603,6 +1611,7 @@
         const finalScreen = document.getElementById('final-screen');
         const scoreDisplay = document.getElementById('score-display');
         const totalQuestionsDisplay = document.getElementById('total-questions-display');
+        const totalQuestionsCount = document.getElementById('total-questions-count');
         const restartFromFinalButton = document.getElementById('restart-from-final-button');
 
         let userAnswers = []; // Armazena as respostas do usuário [questionIndex] = selectedOptionIndex
@@ -1620,7 +1629,8 @@
             }
             userAnswers = Array(flatQuestions.length).fill(null); // Inicializa todas as respostas como nulas
             totalScore = 0;
-            totalQuestionsDisplay.textContent = flatQuestions.length;
+            totalQuestionsDisplay.textContent = flatQuestions.length; // Atualiza o total de questões respondidas (inicialmente 0)
+            totalQuestionsCount.textContent = flatQuestions.length; // Atualiza o total de questões no simulado
         }
 
         /**
@@ -1682,7 +1692,7 @@
                             // Limpa feedback de respostas anteriores ao selecionar nova opção
                             const feedbackElement = questionCard.querySelector('.feedback');
                             if (feedbackElement) {
-                                feedbackElement.classList.remove('correct', 'incorrect');
+                                feedbackElement.classList.remove('correct', 'incorrect', 'unanswered');
                                 feedbackElement.style.display = 'none';
                             }
                         });
@@ -1705,7 +1715,7 @@
 
                 // Adiciona o botão de verificar respostas da seção ao final de cada disciplina
                 const checkSectionButton = document.createElement('button');
-                checkSectionButton.className = 'button button-secondary mt-4 mb-8 mx-auto'; // Centraliza o botão
+                checkSectionButton.className = 'button button-secondary mt-4 mb-8 mx-auto block'; // Centraliza o botão
                 checkSectionButton.textContent = `Verificar Respostas da Seção de ${disciplineName}`;
                 checkSectionButton.setAttribute('data-discipline', disciplineName);
                 checkSectionButton.addEventListener('click', (event) => {
@@ -1728,14 +1738,16 @@
                 const questionIndex = flatQuestions.indexOf(q); // Encontra o índice global da questão
                 const questionCard = questionsContainer.querySelector(`[data-question-index="${questionIndex}"]`);
                 const feedbackDiv = questionCard.querySelector('.feedback');
+                
+                feedbackDiv.classList.remove('correct', 'incorrect', 'unanswered'); // Limpa classes anteriores
                 feedbackDiv.style.display = 'block'; // Garante que o feedback div está visível
 
                 const selectedOptionIndex = userAnswers[questionIndex];
 
                 if (selectedOptionIndex === null) {
                     feedbackDiv.textContent = 'Você não selecionou uma resposta para esta questão.';
-                    feedbackDiv.className = 'feedback incorrect';
-                    questionCard.classList.add('border-red-400', 'border-2');
+                    feedbackDiv.classList.add('unanswered'); // Nova classe para não respondida
+                    questionCard.classList.remove('border-red-400', 'border-2'); // Remove borda vermelha se houver
                 } else {
                     const selectedAnswer = q.options[selectedOptionIndex];
                     questionCard.classList.remove('border-red-400', 'border-2'); // Remove borda vermelha se houver
@@ -1743,10 +1755,8 @@
                     feedbackDiv.textContent = `Resposta Correta: ${q.correct}`;
 
                     if (selectedAnswer === q.correct) {
-                        feedbackDiv.classList.remove('incorrect');
                         feedbackDiv.classList.add('correct');
                     } else {
-                        feedbackDiv.classList.remove('correct');
                         feedbackDiv.classList.add('incorrect');
                     }
                 }
@@ -1757,25 +1767,28 @@
         /**
          * Verifica todas as respostas do usuário, calcula a pontuação
          * e exibe o feedback. Desabilita todos os rádios após a verificação final.
+         * Questões em branco são desconsideradas no cálculo do score.
          */
         function checkAllAnswers() {
             totalScore = 0;
-            let allAnswered = true; // Flag para verificar se todas as perguntas foram respondidas
+            let answeredQuestionsCount = 0; // Contador para questões realmente respondidas
 
             flatQuestions.forEach((q, index) => {
                 const questionCard = questionsContainer.querySelector(`[data-question-index="${index}"]`);
                 const feedbackDiv = questionCard.querySelector('.feedback');
+                
+                feedbackDiv.classList.remove('correct', 'incorrect', 'unanswered'); // Limpa classes anteriores
                 feedbackDiv.style.display = 'block'; // Garante que o feedback div está visível
 
                 const selectedOptionIndex = userAnswers[index];
 
                 if (selectedOptionIndex === null) {
-                    allAnswered = false; // Nem todas as perguntas foram respondidas
                     feedbackDiv.textContent = 'Você não selecionou uma resposta para esta questão.';
-                    feedbackDiv.className = 'feedback incorrect';
-                    // Adiciona uma classe visual para indicar que a questão não foi respondida
-                    questionCard.classList.add('border-red-400', 'border-2');
+                    feedbackDiv.classList.add('unanswered'); // Nova classe para não respondida
+                    questionCard.classList.remove('border-red-400', 'border-2'); // Remove borda vermelha se houver
+                    // Não incrementa totalScore nem answeredQuestionsCount
                 } else {
+                    answeredQuestionsCount++; // A questão foi respondida (certa ou errada)
                     const selectedAnswer = q.options[selectedOptionIndex];
                     questionCard.classList.remove('border-red-400', 'border-2'); // Remove borda vermelha se houver
 
@@ -1784,26 +1797,19 @@
 
                     if (selectedAnswer === q.correct) {
                         totalScore++;
-                        feedbackDiv.classList.remove('incorrect');
                         feedbackDiv.classList.add('correct');
                     } else {
-                        feedbackDiv.classList.remove('correct');
                         feedbackDiv.classList.add('incorrect');
                     }
                 }
 
-                // Desabilita os radios após a verificação final
+                // Desabilita os radios após a verificação final (geral)
                 const radios = questionCard.querySelectorAll('input[type="radio"]');
                 radios.forEach(radio => radio.disabled = true);
             });
 
-            if (!allAnswered) {
-                // Se nem todas as perguntas foram respondidas, exibir um aviso e não mostrar a tela final
-                alert('Por favor, responda a todas as questões antes de finalizar o simulado.');
-                return;
-            }
-
             scoreDisplay.textContent = totalScore;
+            totalQuestionsDisplay.textContent = answeredQuestionsCount; // Mostra quantas foram respondidas
             finalScreen.classList.remove('hidden');
             submitAllButton.disabled = true; // Desabilita o botão de finalizar após a submissão
         }
