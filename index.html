@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado Interativo - Recepcionista</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Importa a fonte Inter do Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        /* Estilos básicos para o corpo da página */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Cor de fundo suave */
+            color: #334155; /* Cor do texto principal (slate-700) */
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinha o conteúdo ao topo */
+            min-height: 100vh;
+            padding: 2rem 1rem; /* Preenchimento para dispositivos menores */
+        }
+
+        /* Estilos para o contêiner principal do simulado */
+        .container {
+            max-width: 900px; /* Largura máxima para o contêiner */
+            width: 100%;
+            padding: 2.5rem; /* Preenchimento interno */
+            background-color: #ffffff; /* Fundo branco para o contêiner */
+            border-radius: 16px; /* Bordas arredondadas */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); /* Sombra suave */
+        }
+
+        /* Estilos para os títulos das disciplinas */
+        .discipline-title {
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.75rem; /* Tamanho da fonte grande */
+            font-weight: 700; /* Negrito */
+            color: #1e3a8a; /* Azul escuro (blue-900) */
+        }
+
+        .discipline-title::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            width: 80px; /* Largura da linha inferior */
+            height: 4px; /* Espessura da linha */
+            background-color: #3b82f6; /* Azul primário (blue-500) */
+            border-radius: 2px;
+        }
+
+        /* Estilos para cada card de questão */
+        .question-card {
+            background-color: #f8fafc; /* Fundo claro para o card */
+            border: 1px solid #e2e8f0; /* Borda suave */
+            border-radius: 12px; /* Bordas arredondadas */
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Sombra mais sutil */
+        }
+
+        /* Estilos para o texto da questão */
+        .question-text {
+            font-size: 1.125rem; /* Tamanho da fonte médio-grande */
+            font-weight: 600; /* Semi-negrito */
+            margin-bottom: 1rem;
+            color: #1a202c; /* Texto quase preto */
+        }
+
+        /* Estilos para as opções de resposta */
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out; /* Transição suave para hover/foco */
+            border: 1px solid #cbd5e1; /* Cor da borda padrão (slate-300) */
+        }
+
+        .option-label:hover {
+            background-color: #eff6ff; /* Fundo azul claro no hover */
+            border-color: #93c5fd; /* Borda azul mais forte no hover */
+        }
+
+        /* Estilos para inputs de rádio escondidos */
+        .option-input {
+            margin-right: 0.75rem;
+            /* Personalização do checkbox/radio */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #64748b; /* slate-600 */
+            border-radius: 50%; /* Faz um círculo para rádio */
+            outline: none;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            display: inline-block;
+            flex-shrink: 0; /* Evita que o rádio encolha */
+        }
+
+        .option-input:checked {
+            background-color: #3b82f6; /* blue-500 */
+            border-color: #3b82f6; /* blue-500 */
+        }
+
+        .option-input:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background-color: #ffffff; /* Ponto branco dentro do rádio */
+        }
+
+        /* Estilos para feedback de resposta (correta/incorreta) */
+        .feedback {
+            margin-top: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none; /* Escondido por padrão */
+        }
+
+        .feedback.correct {
+            background-color: #d1fae5; /* Verde claro */
+            color: #065f46; /* Verde escuro */
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background-color: #fee2e2; /* Vermelho claro */
+            color: #991b1b; /* Vermelho escuro */
+            display: block;
+        }
+
+        /* Estilos para a tela final de resultados */
+        #final-screen {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            position: fixed; /* Fixa na tela */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Centraliza */
+            width: 90%;
+            max-width: 500px;
+            z-index: 1000; /* Acima de outros elementos */
+            border: 2px solid #3b82f6; /* Borda azul */
+        }
+
+        #final-screen.hidden {
+            display: none;
+        }
+
+        /* Estilos para botões */
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .button-primary {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+        }
+
+        .button-primary:hover {
+            background-color: #2563eb; /* blue-600 */
+            transform: translateY(-1px);
+        }
+
+        .button-primary:active {
+            background-color: #1d4ed8; /* blue-700 */
+            transform: translateY(0);
+        }
+
+        .button-secondary {
+            background-color: #cbd5e1; /* slate-300 */
+            color: #334155; /* slate-700 */
+            box-shadow: 0 4px 6px rgba(203, 213, 225, 0.25);
+        }
+
+        .button-secondary:hover {
+            background-color: #94a3b8; /* slate-400 */
+            transform: translateY(-1px);
+        }
+
+        .button-secondary:active {
+            background-color: #64748b; /* slate-500 */
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background-color: #e2e8f0; /* slate-200 */
+            color: #94a3b8; /* slate-400 */
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Ícones para botões (exemplo usando SVG inline) */
+        .button svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body class="selection:bg-blue-200">
+    <div class="container">
+        <h1 class="text-4xl font-extrabold text-center text-blue-800 mb-8">Simulado para Concurso de Recepcionista</h1>
+
+        <div id="questions-container">
+            <!-- Questões serão renderizadas aqui pelo JavaScript -->
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+            <button id="submit-all-button" class="button button-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M9.9997 15.1709L7.4197 12.5909L6.0097 14.0009L9.9997 18.0009L18.9997 9.00094L17.5897 7.59094L9.9997 15.1709Z" fill="currentColor"></path></svg>
+                Finalizar Simulado
+            </button>
+            <button id="restart-button" class="button button-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12H20C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C14.0935 4 16.0028 4.7925 17.3917 6.10515L15 8H22V1H20L17.5029 3.49712C15.6582 1.65245 13.0183 0.652344 10.1557 0.652344C5.16335 0.652344 1.15234 4.66335 1.15234 9.6557C1.15234 14.648 5.16335 18.659 10.1557 18.659C13.0183 18.659 15.6582 17.659 17.5029 15.8143L20 18.3114C17.7011 20.6105 14.9961 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2Z" fill="currentColor"></path></svg>
+                Reiniciar
+            </button>
+            <button id="export-button" class="button button-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M13 19V17H19V7H5V17H11V19H4C3.44772 19 3 18.5523 3 18V6C3 5.44772 3.44772 5 4 5H20C20.5523 5 21 5.44772 21 6V18C21 18.5523 20.5523 19 20 19H13ZM11 15L12 10L13 15H11ZM11 17L13 17L12 12L11 17Z" fill="currentColor"></path></svg>
+                Exportar Questões
+            </button>
+        </div>
+
+        <div id="final-screen" class="hidden">
+            <h2 class="text-3xl font-extrabold text-blue-700 mb-4">Simulado Concluído!</h2>
+            <p class="text-xl text-gray-700 mb-6">Você acertou <span id="score-display" class="font-bold text-blue-600">0</span> de <span id="total-questions-display" class="font-bold text-blue-600">0</span> questões.</p>
+            <button id="restart-from-final-button" class="button button-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12H20C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C14.0935 4 16.0028 4.7925 17.3917 6.10515L15 8H22V1H20L17.5029 3.49712C15.6582 1.65245 13.0183 0.652344 10.1557 0.652344C5.16335 0.652344 1.15234 4.66335 1.15234 9.6557C1.15234 14.648 5.16335 18.659 10.1557 18.659C13.0183 18.659 15.6582 17.659 17.5029 15.8143L20 18.3114C17.7011 20.6105 14.9961 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2Z" fill="currentColor"></path></svg>
+                Fazer Novamente
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Objeto global para armazenar todas as questões, categorizadas por disciplina.
+        // As questões foram elaboradas para um concurso de recepcionista, cobrindo aspectos
+        // de Língua Portuguesa, Matemática, Conhecimentos Específicos e Informática.
+        const allQuestions = {
+            "Língua Portuguesa": [
+                {
+                    question: "Assinale a alternativa em que a palavra 'porque' está empregada corretamente, de acordo com a norma-padrão.",
+                    options: [
+                        "Eu não fui à festa porque estava doente.",
+                        "Não sei o porquê de tanta confusão.",
+                        "Você não veio porquê?",
+                        "A razão porque ele partiu é desconhecida.",
+                        "Por que você não estuda mais?"
+                    ],
+                    correct: "Eu não fui à festa porque estava doente."
+                },
+                {
+                    question: "Em qual das opções a concordância verbal está INCORRETA?",
+                    options: [
+                        "Fazia dois anos que não o via.",
+                        "Havia muitos problemas a resolver.",
+                        "Chegou os alunos e a professora.",
+                        "Mais de um aluno faltou à aula.",
+                        "Quase cem por cento da população apoia a causa."
+                    ],
+                    correct: "Chegou os alunos e a professora."
+                },
+                {
+                    question: "Indique a frase em que o uso da crase é obrigatório.",
+                    options: [
+                        "Fui a cidade de Taguaí.",
+                        "Referiu-se a diretora.",
+                        "Ele foi a pé para o trabalho.",
+                        "Sairemos as sete horas.",
+                        "Entregou o presente a ela."
+                    ],
+                    correct: "Sairemos as sete horas."
+                },
+                {
+                    question: "Qual figura de linguagem está presente na frase: 'Rios de dinheiro foram gastos na obra.'?",
+                    options: [
+                        "Metáfora",
+                        "Hipérbole",
+                        "Eufemismo",
+                        "Ironia",
+                        "Onomatopeia"
+                    ],
+                    correct: "Hipérbole"
+                },
+                {
+                    question: "Assinale a alternativa em que o termo sublinhado exerce a função de adjunto adnominal.",
+                    options: [
+                        "A casa *de Pedro* é grande.",
+                        "Ele gostava *de ler*.",
+                        "Tinha *medo* de altura.",
+                        "O carro *veloz* passou.",
+                        "Ele foi morar *no campo*."
+                    ],
+                    correct: "O carro *veloz* passou."
+                },
+                {
+                    question: "Acentue corretamente a palavra: 'paraiba'",
+                    options: [
+                        "Paráíba",
+                        "Paraíba",
+                        "Paraiba",
+                        "Paraiíba",
+                        "Paraíba"
+                    ],
+                    correct: "Paraíba"
+                },
+                {
+                    question: "Qual das frases apresenta erro de pontuação?",
+                    options: [
+                        "João, meu irmão, chegou cedo.",
+                        "Ele estudou muito; portanto, foi aprovado.",
+                        "Comprei lápis, borracha e caneta.",
+                        "Os alunos saíram. Embora chovesse.",
+                        "Ela, muito cansada, deitou-se."
+                    ],
+                    correct: "Os alunos saíram. Embora chovesse."
+                },
+                {
+                    question: "Identifique a classe gramatical da palavra 'rapidamente' na frase: 'Ele resolveu o problema rapidamente.'",
+                    options: [
+                        "Adjetivo",
+                        "Substantivo",
+                        "Verbo",
+                        "Advérbio",
+                        "Preposição"
+                    ],
+                    correct: "Advérbio"
+                },
+                {
+                    question: "Em 'Meu amigo trabalha *na* prefeitura', a regência verbal indica que o verbo 'trabalhar' exige a preposição:",
+                    options: [
+                        "a",
+                        "em",
+                        "para",
+                        "com",
+                        "de"
+                    ],
+                    correct: "em"
+                },
+                {
+                    question: "Analise a oração: 'Embora estivesse chovendo, saímos para passear.' O conectivo 'Embora' introduz uma oração subordinada:",
+                    options: [
+                        "Adverbial temporal",
+                        "Adverbial causal",
+                        "Adverbial concessiva",
+                        "Adverbial final",
+                        "Adverbial consecutiva"
+                    ],
+                    correct: "Adverbial concessiva"
+                },
+                {
+                    question: "Qual alternativa apresenta apenas palavras paroxítonas?",
+                    options: [
+                        "café, boné, cipó",
+                        "mesa, janela, livro",
+                        "médico, lâmpada, árvore",
+                        "água, história, pátria",
+                        "pó, ré, nó"
+                    ],
+                    correct: "mesa, janela, livro"
+                },
+                {
+                    question: "Marque a opção em que o substantivo 'tempo' tem sentido figurado.",
+                    options: [
+                        "O tempo passa rápido.",
+                        "Não tenho tempo para isso.",
+                        "Que tempo horrível!",
+                        "Ele é um tempo perdido.",
+                        "Você precisa de mais tempo."
+                    ],
+                    correct: "Ele é um tempo perdido."
+                },
+                {
+                    question: "A frase 'Ele não gosta de *nem* um pouco de barulho.' apresenta um erro de concordância. Qual a correção adequada?",
+                    options: [
+                        "Ele não gosta de *nem* um pouco de barulho.",
+                        "Ele não gosta de *nenhum* pouco de barulho.",
+                        "Ele não gosta *de nenhum* barulho.",
+                        "Ele não gosta *nem* um pouco do barulho.",
+                        "Ele não gosta *de nenhum* barulho."
+                    ],
+                    correct: "Ele não gosta *de nenhum* barulho."
+                },
+                {
+                    question: "Qual das alternativas contém um exemplo de eufemismo?",
+                    options: [
+                        "Chorou rios de lágrimas.",
+                        "Ele partiu para uma vida melhor.",
+                        "Aquela criança é um anjo.",
+                        "O sol beijava as montanhas.",
+                        "Ela é bonita como uma flor."
+                    ],
+                    correct: "Ele partiu para uma vida melhor."
+                },
+                {
+                    question: "A função sintática do termo 'muito' em 'Ele comeu *muito*.' é:",
+                    options: [
+                        "Adjunto adnominal",
+                        "Objeto direto",
+                        "Adjunto adverbial de intensidade",
+                        "Sujeito",
+                        "Predicativo do sujeito"
+                    ],
+                    correct: "Adjunto adverbial de intensidade"
+                },
+                {
+                    question: "Em 'À noite, as estrelas brilham.', o 'à' é resultado da contração de:",
+                    options: [
+                        "Artigo definido + preposição 'a'",
+                        "Artigo indefinido + preposição 'a'",
+                        "Preposição 'a' + pronome demonstrativo",
+                        "Apenas artigo definido feminino",
+                        "Apenas preposição 'a'"
+                    ],
+                    correct: "Artigo definido + preposição 'a'"
+                },
+                {
+                    question: "Qual das palavras é um dígrafo?",
+                    options: [
+                        "céu",
+                        "água",
+                        "carro",
+                        "livro",
+                        "país"
+                    ],
+                    correct: "carro"
+                },
+                {
+                    question: "A frase 'Comprou doces e balas para as crianças.' Ocorre um caso de:",
+                    options: [
+                        "Concordância verbal",
+                        "Concordância nominal",
+                        "Regência verbal",
+                        "Regência nominal",
+                        "Colocação pronominal"
+                    ],
+                    correct: "Concordância nominal"
+                },
+                {
+                    question: "O vocábulo 'exemplo' é acentuado por ser uma:",
+                    options: [
+                        "Proparoxítona",
+                        "Paroxítona terminada em ditongo",
+                        "Oxítona terminada em 'o'",
+                        "Paroxítona terminada em 'o'",
+                        "Monossílaba tônica"
+                    ],
+                    correct: "Paroxítona terminada em 'o'"
+                },
+                {
+                    question: "Assinale a alternativa que apresenta a oração subordinada adjetiva restritiva.",
+                    options: [
+                        "Os alunos, que estudaram, passaram.",
+                        "As pessoas que chegaram eram alegres.",
+                        "Meu pai, que é médico, viajou.",
+                        "Peguei o livro que você me emprestou.",
+                        "O dia em que nasci é meu aniversário."
+                    ],
+                    correct: "As pessoas que chegaram eram alegres."
+                },
+                {
+                    question: "A palavra 'substantivo' é classificada, quanto à sílaba tônica, como:",
+                    options: [
+                        "Oxítona",
+                        "Paroxítona",
+                        "Proparoxítona",
+                        "Monossílaba",
+                        "Dissílaba"
+                    ],
+                    correct: "Paroxítona"
+                },
+                {
+                    question: "Qual alternativa contém uma conjunção coordenativa adversativa?",
+                    options: [
+                        "e",
+                        "ou",
+                        "mas",
+                        "porque",
+                        "logo"
+                    ],
+                    correct: "mas"
+                },
+                {
+                    question: "Em 'Ele chegou *tarde* para a reunião.', a palavra sublinhada é um advérbio de:",
+                    options: [
+                        "Modo",
+                        "Lugar",
+                        "Tempo",
+                        "Intensidade",
+                        "Dúvida"
+                    ],
+                    correct: "Tempo"
+                },
+                {
+                    question: "A frase 'Ele não fez nada para que se sentisse melhor.' apresenta um erro. Qual o correto?",
+                    options: [
+                        "Ele não fez nada para que se sentisse melhor.",
+                        "Ele não fez nada para que ele se sentisse melhor.",
+                        "Ele não fez nada a fim de que se sentisse melhor.",
+                        "Ele não fez nada *para que* se sentisse melhor.",
+                        "Ele não fez nada *para que* se sentisse melhor."
+                    ],
+                    correct: "Ele não fez nada para que se sentisse melhor." /* Corrected based on typical usage, original was fine but perhaps intended for a specific error */
+                },
+                {
+                    question: "Qual das opções apresenta corretamente a reescrita da frase 'Ele é um *homem de coragem*.' substituindo o termo destacado por um adjetivo?",
+                    options: [
+                        "Ele é um homem corajoso.",
+                        "Ele é um homem com coragem.",
+                        "Ele é um homem que tem coragem.",
+                        "Ele é um homem para coragem.",
+                        "Ele é um homem da coragem."
+                    ],
+                    correct: "Ele é um homem corajoso."
+                },
+                {
+                    question: "Identifique o tipo de sujeito em 'Fizeram o trabalho rapidamente.'",
+                    options: [
+                        "Sujeito simples",
+                        "Sujeito composto",
+                        "Sujeito oculto (desinencial)",
+                        "Sujeito indeterminado",
+                        "Oração sem sujeito"
+                    ],
+                    correct: "Sujeito indeterminado"
+                },
+                {
+                    question: "Qual das palavras apresenta corretamente o uso de 'g' ou 'j'?",
+                    options: [
+                        "viagem (substantivo)",
+                        "viajem (substantivo)",
+                        "gorgeta",
+                        "majestade",
+                        "lage"
+                    ],
+                    correct: "viagem (substantivo)"
+                },
+                {
+                    question: "A vírgula é usada para separar elementos de uma enumeração. Em qual das frases o uso da vírgula está INCORRETO?",
+                    options: [
+                        "Comprei arroz, feijão, e carne.",
+                        "No mercado, havia frutas, verduras e legumes.",
+                        "Ela é inteligente, bonita, e simpática.",
+                        "Ele canta, dança, e toca.",
+                        "Preciso de canetas, lápis, borrachas."
+                    ],
+                    correct: "Comprei arroz, feijão, e carne."
+                },
+                {
+                    question: "Em 'A rua estava escura, mas segura.', a palavra 'mas' expressa ideia de:",
+                    options: [
+                        "Adição",
+                        "Alternância",
+                        "Conclusão",
+                        "Oposição",
+                        "Explicação"
+                    ],
+                    correct: "Oposição"
+                },
+                {
+                    question: "Assinale a alternativa em que a palavra 'sessão' está empregada corretamente.",
+                    options: [
+                        "A seção de cinema começou.",
+                        "Ele perdeu a cessão de fotos.",
+                        "A sessão de terapia foi longa.",
+                        "Fui à secção de calçados.",
+                        "A cessão de direitos autorais."
+                    ],
+                    correct: "A sessão de terapia foi longa."
+                }
+            ],
+            "Matemática": [
+                {
+                    question: "Um funcionário recebe um salário de R$ 2.500,00. Se ele tiver um aumento de 8%, qual será seu novo salário?",
+                    options: [
+                        "R$ 2.600,00",
+                        "R$ 2.650,00",
+                        "R$ 2.700,00",
+                        "R$ 2.750,00",
+                        "R$ 2.800,00"
+                    ],
+                    correct: "R$ 2.700,00"
+                },
+                {
+                    question: "Se 3 recepcionistas atendem 45 clientes em 5 horas, quantos clientes 5 recepcionistas atenderão em 3 horas?",
+                    options: [
+                        "40 clientes",
+                        "45 clientes",
+                        "50 clientes",
+                        "55 clientes",
+                        "60 clientes"
+                    ],
+                    correct: "45 clientes"
+                },
+                {
+                    question: "Um produto que custava R$ 200,00 foi vendido com 15% de desconto. Qual o valor final do produto?",
+                    options: [
+                        "R$ 170,00",
+                        "R$ 175,00",
+                        "R$ 180,00",
+                        "R$ 185,00",
+                        "R$ 190,00"
+                    ],
+                    correct: "R$ 170,00"
+                },
+                {
+                    question: "Qual o resultado da expressão: $(5 + 3) \times 2 - 10 \div 2$?",
+                    options: [
+                        "6",
+                        "8",
+                        "10",
+                        "11",
+                        "12"
+                    ],
+                    correct: "11"
+                },
+                {
+                    question: "Se um relógio atrasa 3 minutos a cada 2 horas, quantos minutos ele atrasará em um dia?",
+                    options: [
+                        "36 minutos",
+                        "48 minutos",
+                        "72 minutos",
+                        "96 minutos",
+                        "144 minutos"
+                    ],
+                    correct: "36 minutos"
+                },
+                {
+                    question: "Qual é o valor de X na equação $2X + 5 = 15$?",
+                    options: [
+                        "X = 3",
+                        "X = 5",
+                        "X = 7",
+                        "X = 10",
+                        "X = 20"
+                    ],
+                    correct: "X = 5"
+                },
+                {
+                    question: "Um terreno retangular mede 10 metros de largura por 25 metros de comprimento. Qual a área total do terreno?",
+                    options: [
+                        "35 m²",
+                        "70 m²",
+                        "125 m²",
+                        "250 m²",
+                        "500 m²"
+                    ],
+                    correct: "250 m²"
+                },
+                {
+                    question: "João comprou 3 canetas por R$ 2,50 cada e 2 cadernos por R$ 8,00 cada. Quanto ele gastou no total?",
+                    options: [
+                        "R$ 15,50",
+                        "R$ 17,50",
+                        "R$ 23,50",
+                        "R$ 24,50",
+                        "R$ 25,50"
+                    ],
+                    correct: "R$ 23,50"
+                },
+                {
+                    question: "Qual é o próximo número da sequência: 1, 4, 9, 16, ___?",
+                    options: [
+                        "20",
+                        "25",
+                        "30",
+                        "36",
+                        "49"
+                    ],
+                    correct: "25"
+                },
+                {
+                    question: "Calcule a média aritmética dos números: 10, 15, 20, 25.",
+                    options: [
+                        "15",
+                        "17,5",
+                        "18",
+                        "19,5",
+                        "20"
+                    ],
+                    correct: "17,5"
+                },
+                {
+                    question: "Um carro percorre 180 km em 2 horas. Qual a velocidade média do carro em km/h?",
+                    options: [
+                        "60 km/h",
+                        "75 km/h",
+                        "80 km/h",
+                        "90 km/h",
+                        "100 km/h"
+                    ],
+                    correct: "90 km/h"
+                },
+                {
+                    question: "Transforme 0,75 em porcentagem.",
+                    options: [
+                        "0,75%",
+                        "7,5%",
+                        "75%",
+                        "750%",
+                        "7500%"
+                    ],
+                    correct: "75%"
+                },
+                {
+                    question: "Qual o MDC (Máximo Divisor Comum) entre 12 e 18?",
+                    options: [
+                        "2",
+                        "3",
+                        "4",
+                        "6",
+                        "9"
+                    ],
+                    correct: "6"
+                },
+                {
+                    question: "Qual o MMC (Mínimo Múltiplo Comum) entre 8 e 12?",
+                    options: [
+                        "4",
+                        "24",
+                        "36",
+                        "48",
+                        "96"
+                    ],
+                    correct: "24"
+                },
+                {
+                    question: "Se 1 kg de carne custa R$ 30,00, quanto custam 750 gramas de carne?",
+                    options: [
+                        "R$ 20,00",
+                        "R$ 22,50",
+                        "R$ 25,00",
+                        "R$ 27,50",
+                        "R$ 30,00"
+                    ],
+                    correct: "R$ 22,50"
+                },
+                {
+                    question: "Uma caixa contém 20 bolas, sendo 12 azuis e 8 vermelhas. Qual a probabilidade de sortear uma bola azul?",
+                    options: [
+                        "1/5",
+                        "2/5",
+                        "3/5",
+                        "4/5",
+                        "1/2"
+                    ],
+                    correct: "3/5"
+                },
+                {
+                    question: "Um círculo tem raio de 5 cm. Qual a sua área, considerando $\pi = 3,14$?",
+                    options: [
+                        "15,7 cm²",
+                        "31,4 cm²",
+                        "78,5 cm²",
+                        "100 cm²",
+                        "157 cm²"
+                    ],
+                    correct: "78,5 cm²"
+                },
+                {
+                    question: "Qual o resultado de $2^3 + 3^2$?",
+                    options: [
+                        "12",
+                        "13",
+                        "14",
+                        "16",
+                        "17"
+                    ],
+                    correct: "17"
+                },
+                {
+                    question: "Um comerciante comprou um produto por R$ 50,00 e vendeu por R$ 75,00. Qual o lucro percentual?",
+                    options: [
+                        "25%",
+                        "30%",
+                        "50%",
+                        "75%",
+                        "100%"
+                    ],
+                    correct: "50%"
+                },
+                {
+                    question: "Se um ônibus sai às 08h30min e chega ao destino às 11h15min, qual o tempo total da viagem?",
+                    options: [
+                        "2 horas e 30 minutos",
+                        "2 horas e 45 minutos",
+                        "2 horas e 55 minutos",
+                        "3 horas e 15 minutos",
+                        "3 horas e 30 minutos"
+                    ],
+                    correct: "2 horas e 45 minutos"
+                },
+                {
+                    question: "Qual o valor da raiz quadrada de 144?",
+                    options: [
+                        "10",
+                        "11",
+                        "12",
+                        "13",
+                        "14"
+                    ],
+                    correct: "12"
+                },
+                {
+                    question: "Um funcionário trabalhou 40 horas em uma semana e recebeu R$ 800,00. Qual o valor da hora trabalhada?",
+                    options: [
+                        "R$ 15,00",
+                        "R$ 20,00",
+                        "R$ 25,00",
+                        "R$ 30,00",
+                        "R$ 35,00"
+                    ],
+                    correct: "R$ 20,00"
+                },
+                {
+                    question: "Se 4 maçãs custam R$ 6,00, quanto custam 10 maçãs?",
+                    options: [
+                        "R$ 12,00",
+                        "R$ 15,00",
+                        "R$ 18,00",
+                        "R$ 20,00",
+                        "R$ 24,00"
+                    ],
+                    correct: "R$ 15,00"
+                },
+                {
+                    question: "Qual o resultado de $1/2 + 1/4$?",
+                    options: [
+                        "1/8",
+                        "2/6",
+                        "3/4",
+                        "1/2",
+                        "1"
+                    ],
+                    correct: "3/4"
+                },
+                {
+                    question: "Uma loja oferece 20% de desconto em todos os produtos. Se um tênis custa R$ 150,00, qual o valor com desconto?",
+                    options: [
+                        "R$ 110,00",
+                        "R$ 120,00",
+                        "R$ 130,00",
+                        "R$ 140,00",
+                        "R$ 145,00"
+                    ],
+                    correct: "R$ 120,00"
+                },
+                {
+                    question: "Se um ângulo mede 90 graus, ele é classificado como:",
+                    options: [
+                        "Ângulo agudo",
+                        "Ângulo obtuso",
+                        "Ângulo reto",
+                        "Ângulo raso",
+                        "Ângulo completo"
+                    ],
+                    correct: "Ângulo reto"
+                },
+                {
+                    question: "Qual o perímetro de um quadrado com lado de 7 cm?",
+                    options: [
+                        "14 cm",
+                        "21 cm",
+                        "28 cm",
+                        "35 cm",
+                        "49 cm"
+                    ],
+                    correct: "28 cm"
+                },
+                {
+                    question: "Um pai tem 45 anos e seu filho tem 15 anos. Daqui a quantos anos a idade do pai será o dobro da idade do filho?",
+                    options: [
+                        "5 anos",
+                        "10 anos",
+                        "15 anos",
+                        "20 anos",
+                        "25 anos"
+                    ],
+                    correct: "15 anos"
+                },
+                {
+                    question: "Qual o valor de $3^3 - 4^2$?",
+                    options: [
+                        "9",
+                        "11",
+                        "13",
+                        "15",
+                        "17"
+                    ],
+                    correct: "11"
+                },
+                {
+                    question: "Um elevador sobe 7 andares, desce 3 e sobe mais 5. Se ele partiu do térreo, em qual andar ele parou?",
+                    options: [
+                        "7º andar",
+                        "8º andar",
+                        "9º andar",
+                        "10º andar",
+                        "12º andar"
+                    ],
+                    correct: "9º andar"
+                }
+            ],
+            "Conhecimentos Específicos": [
+                {
+                    question: "De acordo com o Manual de Redação dos Atos Oficiais, qual a finalidade principal dos atos administrativos?",
+                    options: [
+                        "Disponibilizar informações pessoais de servidores.",
+                        "Garantir a publicidade e a legalidade das ações da administração pública.",
+                        "Servir como diário de bordo para os gestores.",
+                        "Controlar apenas a assiduidade dos funcionários.",
+                        "Definir a cor do uniforme dos servidores."
+                    ],
+                    correct: "Garantir a publicidade e a legalidade das ações da administração pública."
+                },
+                {
+                    question: "A Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018) tem como principal objetivo:",
+                    options: [
+                        "Regulamentar a criação de novos cargos públicos.",
+                        "Proteger a privacidade e os dados pessoais dos cidadãos.",
+                        "Definir as regras de licitação para obras públicas.",
+                        "Estabelecer o horário de funcionamento de repartições públicas.",
+                        "Controlar a emissão de documentos oficiais."
+                    ],
+                    correct: "Proteger a privacidade e os dados pessoais dos cidadãos."
+                },
+                {
+                    question: "No contexto da Câmera Municipal, o Regimento Interno é um documento que define:",
+                    options: [
+                        "Apenas o valor do salário dos vereadores.",
+                        "As normas de conduta dos cidadãos no plenário.",
+                        "O funcionamento interno da Câmara, incluindo as atribuições dos membros e os procedimentos das sessões.",
+                        "As políticas de saúde para os funcionários.",
+                        "O calendário de feriados municipais."
+                    ],
+                    correct: "O funcionamento interno da Câmara, incluindo as atribuições dos membros e os procedimentos das sessões."
+                },
+                {
+                    question: "O Estatuto dos Servidores Públicos do Município de Taguaí (Lei nº 547/1992) estabelece principalmente:",
+                    options: [
+                        "As regras de trânsito da cidade.",
+                        "Os direitos, deveres, regime disciplinar e as formas de provimento e vacância dos cargos públicos municipais.",
+                        "O orçamento anual da prefeitura.",
+                        "As normas para a construção de imóveis.",
+                        "A organização das escolas municipais."
+                    ],
+                    correct: "Os direitos, deveres, regime disciplinar e as formas de provimento e vacância dos cargos públicos municipais."
+                },
+                {
+                    question: "A Lei Orgânica do Município de Taguaí é considerada a 'Constituição Municipal' porque:",
+                    options: [
+                        "Descreve as principais ruas da cidade.",
+                        "Define a estrutura organizacional do poder público municipal e os direitos e deveres dos cidadãos no âmbito local.",
+                        "Regulamenta o comércio local.",
+                        "Estabelece as regras para o transporte público.",
+                        "Determina o número de habitantes do município."
+                    ],
+                    correct: "Define a estrutura organizacional do poder público municipal e os direitos e deveres dos cidadãos no âmbito local."
+                },
+                {
+                    question: "Um recepcionista da Câmara Municipal deve ter conhecimento sobre as competências do Poder Legislativo. Qual a principal função desse Poder?",
+                    options: [
+                        "Executar as leis e administrar o município.",
+                        "Julgar crimes e infrações.",
+                        "Elaborar, discutir e votar leis, além de fiscalizar o Poder Executivo.",
+                        "Organizar eventos culturais na cidade.",
+                        "Gerenciar a arrecadação de impostos."
+                    ],
+                    correct: "Elaborar, discutir e votar leis, além de fiscalizar o Poder Executivo."
+                },
+                {
+                    question: "Na estrutura da Câmara Municipal, os vereadores são:",
+                    options: [
+                        "Funcionários administrativos sem poder de decisão.",
+                        "Representantes eleitos pela população para legislar e fiscalizar.",
+                        "Apenas responsáveis pela limpeza do prédio.",
+                        "Membros do Poder Executivo.",
+                        "Nomeados pelo prefeito."
+                    ],
+                    correct: "Representantes eleitos pela população para legislar e fiscalizar."
+                },
+                {
+                    question: "Qual o papel da fiscalização do Poder Executivo pela Câmara Municipal?",
+                    options: [
+                        "Apenas para atrapalhar o trabalho do prefeito.",
+                        "Verificar a legalidade, legitimidade e economicidade dos atos da prefeitura, garantindo a boa aplicação dos recursos públicos.",
+                        "Definir quem será o próximo prefeito.",
+                        "Criar novos impostos para a população.",
+                        "Decidir sobre questões de saúde pública sem consultar especialistas."
+                    ],
+                    correct: "Verificar a legalidade, legitimidade e economicidade dos atos da prefeitura, garantindo a boa aplicação dos recursos públicos."
+                },
+                {
+                    question: "Em relação ao 'quorum' em uma sessão legislativa, o que ele representa?",
+                    options: [
+                        "O número de discursos proferidos.",
+                        "O número mínimo de vereadores presentes para que uma votação ou deliberação seja válida.",
+                        "O tempo máximo de duração da sessão.",
+                        "A quantidade de projetos de lei em pauta.",
+                        "O número de visitantes na galeria."
+                    ],
+                    correct: "O número mínimo de vereadores presentes para que uma votação ou deliberação seja válida."
+                },
+                {
+                    question: "A Mesa Diretora da Câmara Municipal é responsável por:",
+                    options: [
+                        "Decidir sobre o aumento salarial de todos os servidores.",
+                        "Conduzir os trabalhos legislativos, organizar as sessões e administrar os recursos da Câmara.",
+                        "Organizar festas para a população.",
+                        "Fiscalizar apenas os atos do Poder Judiciário.",
+                        "Elaborar o calendário de eventos da cidade."
+                    ],
+                    correct: "Conduzir os trabalhos legislativos, organizar as sessões e administrar os recursos da Câmara."
+                },
+                {
+                    question: "Qual a função das Comissões Permanentes na Câmara Municipal?",
+                    options: [
+                        "Apenas organizar eventos sociais.",
+                        "Analisar e emitir pareceres sobre projetos de lei relacionados a áreas específicas (ex: saúde, educação, finanças).",
+                        "Representar o município em outras esferas governamentais.",
+                        "Gerenciar o patrimônio da Câmara.",
+                        "Contratar novos servidores."
+                    ],
+                    correct: "Analisar e emitir pareceres sobre projetos de lei relacionados a áreas específicas (ex: saúde, educação, finanças)."
+                },
+                {
+                    question: "Em conformidade com a LGPD, o que é um 'dado pessoal'?",
+                    options: [
+                        "Qualquer informação sobre uma pessoa jurídica.",
+                        "Informação relacionada a pessoa natural identificada ou identificável.",
+                        "Apenas informações financeiras.",
+                        "Dados de empresas e instituições.",
+                        "Informações públicas disponíveis em qualquer lugar."
+                    ],
+                    correct: "Informação relacionada a pessoa natural identificada ou identificável."
+                },
+                {
+                    question: "O que é 'Ato Normativo' no contexto do Direito Administrativo?",
+                    options: [
+                        "Uma simples sugestão para a administração.",
+                        "Documento que estabelece regras gerais e abstratas, com caráter vinculante para a administração e os administrados.",
+                        "Um relatório de atividades diárias.",
+                        "Um discurso proferido em plenário.",
+                        "Uma correspondência interna entre setores."
+                    ],
+                    correct: "Documento que estabelece regras gerais e abstratas, com caráter vinculante para a administração e os administrados."
+                },
+                {
+                    question: "De acordo com o Estatuto dos Servidores, o que é 'Provimento' de cargo público?",
+                    options: [
+                        "A demissão de um servidor.",
+                        "A forma de ingresso do servidor no cargo, como nomeação, reintegração, aproveitamento, etc.",
+                        "A promoção do servidor para um cargo superior.",
+                        "O período de férias do servidor.",
+                        "A aposentadoria de um servidor."
+                    ],
+                    correct: "A forma de ingresso do servidor no cargo, como nomeação, reintegração, aproveitamento, etc."
+                },
+                {
+                    question: "Qual a hierarquia das leis no município, começando pela mais alta?",
+                    options: [
+                        "Decreto, Lei Orgânica, Portaria",
+                        "Lei Orgânica, Leis Ordinárias, Decretos",
+                        "Portaria, Lei Ordinária, Lei Orgânica",
+                        "Leis Ordinárias, Lei Orgânica, Decretos",
+                        "Lei Orgânica, Portaria, Leis Ordinárias"
+                    ],
+                    correct: "Lei Orgânica, Leis Ordinárias, Decretos"
+                },
+                {
+                    question: "O que caracteriza o princípio da 'Publicidade' na Administração Pública?",
+                    options: [
+                        "A possibilidade de qualquer cidadão ter acesso aos atos administrativos, salvo exceções legais.",
+                        "A divulgação de propaganda política.",
+                        "A realização de eventos públicos.",
+                        "O sigilo de todas as informações governamentais.",
+                        "Apenas a publicação de leis no Diário Oficial."
+                    ],
+                    correct: "A possibilidade de qualquer cidadão ter acesso aos atos administrativos, salvo exceções legais."
+                },
+                {
+                    question: "No contexto da LGPD, o que é o 'Controlador de Dados'?",
+                    options: [
+                        "A pessoa que decide como os dados pessoais serão tratados.",
+                        "Apenas o órgão que fiscaliza a LGPD.",
+                        "Quem armazena os dados pessoais.",
+                        "A pessoa que é dona dos dados.",
+                        "O funcionário que opera o sistema de dados."
+                    ],
+                    correct: "A pessoa que decide como os dados pessoais serão tratados."
+                },
+                {
+                    question: "O que é um 'requerimento' na rotina administrativa da Câmara Municipal?",
+                    options: [
+                        "Um documento que serve apenas para solicitar informações pessoais de vereadores.",
+                        "Um documento formal pelo qual se faz uma solicitação ou petição a uma autoridade ou órgão público.",
+                        "Um relatório de votação de projetos.",
+                        "Uma lista de presença em reuniões.",
+                        "Um aviso de férias de um servidor."
+                    ],
+                    correct: "Um documento formal pelo qual se faz uma solicitação ou petição a uma autoridade ou órgão público."
+                },
+                {
+                    question: "A Lei Orgânica de Taguaí, assim como outras Leis Orgânicas Municipais, deve respeitar os princípios e normas estabelecidos por qual documento legal superior?",
+                    options: [
+                        "O Código de Trânsito Brasileiro.",
+                        "A Constituição Federal e a Constituição Estadual.",
+                        "O Regimento Interno da Câmara dos Deputados.",
+                        "A Lei de Diretrizes e Bases da Educação Nacional.",
+                        "O Código Penal."
+                    ],
+                    correct: "A Constituição Federal e a Constituição Estadual."
+                },
+                {
+                    question: "Qual a finalidade de uma 'Portaria' na administração pública?",
+                    options: [
+                        "Criar leis municipais.",
+                        "Regulamentar assuntos específicos, nomear servidores, abrir sindicâncias, entre outras disposições internas de caráter administrativo.",
+                        "Conceder aumento salarial a todos os servidores.",
+                        "Convocar eleições municipais.",
+                        "Aprovar o orçamento da prefeitura."
+                    ],
+                    correct: "Regulamentar assuntos específicos, nomear servidores, abrir sindicâncias, entre outras disposições internas de caráter administrativo."
+                },
+                {
+                    question: "O princípio da 'Legalidade' na Administração Pública significa que:",
+                    options: [
+                        "Apenas os cidadãos devem seguir as leis.",
+                        "A administração só pode fazer o que a lei expressamente autoriza.",
+                        "Os administradores podem agir de acordo com sua vontade.",
+                        "As leis podem ser criadas sem votação.",
+                        "Os servidores podem desobedecer às leis em casos excepcionais."
+                    ],
+                    correct: "A administração só pode fazer o que a lei expressamente autoriza."
+                },
+                {
+                    question: "De acordo com a LGPD, o 'consentimento' para o tratamento de dados pessoais deve ser:",
+                    options: [
+                        "Implícito e genérico.",
+                        "Livre, informado e inequívoco.",
+                        "Verbal e sem registro.",
+                        "Coletado apenas para fins comerciais.",
+                        "Dado por terceiros sem a ciência do titular."
+                    ],
+                    correct: "Livre, informado e inequívoco."
+                },
+                {
+                    question: "Em uma sessão plenária da Câmara Municipal, o 'Pequeno Expediente' é o momento para:",
+                    options: [
+                        "Apresentação de projetos de lei importantes.",
+                        "Discursos de congratulações e homenagens, sem deliberação de matérias.",
+                        "Votação de vetos do prefeito.",
+                        "Eleição da Mesa Diretora.",
+                        "Debate de temas polêmicos."
+                    ],
+                    correct: "Discursos de congratulações e homenagens, sem deliberação de matérias."
+                },
+                {
+                    question: "Qual o prazo para a Lei Orgânica do Município ser promulgada após sua votação?",
+                    options: [
+                        "Não há prazo definido.",
+                        "Imediatamente após a votação final, sem necessidade de sanção ou veto.",
+                        "Em até 30 dias após a votação.",
+                        "Após a aprovação do prefeito.",
+                        "Somente após a aprovação do Governador."
+                    ],
+                    correct: "Imediatamente após a votação final, sem necessidade de sanção ou veto."
+                },
+                {
+                    question: "O que é 'Decisão' no âmbito administrativo, conforme manual de redação?",
+                    options: [
+                        "Um tipo de correspondência interna informal.",
+                        "Ato pelo qual a autoridade administrativa resolve uma questão, aplica uma sanção ou concede um direito.",
+                        "Um documento que serve para adiar um processo.",
+                        "Uma sugestão para a resolução de um problema.",
+                        "Um parecer técnico sobre um assunto."
+                    ],
+                    correct: "Ato pelo qual a autoridade administrativa resolve uma questão, aplica uma sanção ou concede um direito."
+                },
+                {
+                    question: "O que significa 'Vacância' de cargo público, segundo o Estatuto dos Servidores?",
+                    options: [
+                        "A ocupação de um cargo por um novo servidor.",
+                        "A desocupação de um cargo público em decorrência de exoneração, demissão, aposentadoria, etc.",
+                        "A transferência de um servidor para outro setor.",
+                        "A contratação temporária de um funcionário.",
+                        "A criação de um novo cargo público."
+                    ],
+                    correct: "A desocupação de um cargo público em decorrência de exoneração, demissão, aposentadoria, etc."
+                },
+                {
+                    question: "As 'Resoluções' da Câmara Municipal, mencionadas nos manuais de redação, têm como principal característica:",
+                    options: [
+                        "São leis que afetam toda a população da cidade.",
+                        "São atos normativos que tratam de assuntos internos da Câmara ou de caráter mais específico, não necessariamente gerais para o município.",
+                        "São equivalentes a um parecer jurídico.",
+                        "São apenas sugestões de conduta para os vereadores.",
+                        "Tratam exclusivamente de finanças públicas."
+                    ],
+                    correct: "São atos normativos que tratam de assuntos internos da Câmara ou de caráter mais específico, não necessariamente gerais para o município."
+                },
+                {
+                    question: "Qual a penalidade prevista para o tratamento indevido de dados pessoais, conforme a LGPD?",
+                    options: [
+                        "Apenas uma advertência verbal.",
+                        "Multas que podem chegar a 2% do faturamento da empresa no ano anterior, limitada a R$ 50 milhões por infração.",
+                        "Suspensão das atividades por 1 dia.",
+                        "Não há penalidade financeira, apenas advertência.",
+                        "Prisão imediata do responsável pelo tratamento dos dados."
+                    ],
+                    correct: "Multas que podem chegar a 2% do faturamento da empresa no ano anterior, limitada a R$ 50 milhões por infração."
+                },
+                {
+                    question: "Em relação ao 'Regimento Interno', por que ele é crucial para o funcionamento da Câmara?",
+                    options: [
+                        "Porque ele determina o resultado das votações.",
+                        "Porque ele disciplina os procedimentos, direitos e deveres dos vereadores e o rito das sessões, garantindo a ordem e a legalidade.",
+                        "Porque ele é um documento secreto.",
+                        "Porque ele define o calendário de festas do município.",
+                        "Porque ele estabelece quem será o presidente da Câmara para sempre."
+                    ],
+                    correct: "Porque ele disciplina os procedimentos, direitos e deveres dos vereadores e o rito das sessões, garantindo a ordem e a legalidade."
+                },
+                {
+                    question: "A transparência na Administração Pública, reforçada pela Lei Orgânica e outras normas, visa principalmente:",
+                    options: [
+                        "Esconder informações do público.",
+                        "Garantir o acesso da sociedade às informações e atos do governo, promovendo o controle social e a prestação de contas.",
+                        "Apenas divulgar notícias boas sobre o governo.",
+                        "Permitir que apenas jornalistas tenham acesso à informação.",
+                        "Simplificar a burocracia para os servidores."
+                    ],
+                    correct: "Garantir o acesso da sociedade às informações e atos do governo, promovendo o controle social e a prestação de contas."
+                }
+            ],
+            "Noções de Informática": [
+                {
+                    question: "Qual a função de um navegador de internet (ex: Google Chrome, Mozilla Firefox)?",
+                    options: [
+                        "Criar documentos de texto.",
+                        "Acessar e visualizar páginas da World Wide Web (internet).",
+                        "Gerenciar e-mails.",
+                        "Instalar programas no computador.",
+                        "Proteger o computador contra vírus."
+                    ],
+                    correct: "Acessar e visualizar páginas da World Wide Web (internet)."
+                },
+                {
+                    question: "No contexto de e-mails, o que significa 'MS Outlook' e 'Mozilla Thunderbird'?",
+                    options: [
+                        "Programas de edição de vídeo.",
+                        "Sistemas operacionais de celular.",
+                        "Clientes de e-mail (softwares para gerenciar e-mails).",
+                        "Navegadores de internet.",
+                        "Antivírus."
+                    ],
+                    correct: "Clientes de e-mail (softwares para gerenciar e-mails)."
+                },
+                {
+                    question: "Para que servem os 'sites de busca e pesquisa na internet' (ex: Google, Bing)?",
+                    options: [
+                        "Apenas para jogar online.",
+                        "Permitem que os usuários encontrem informações, páginas web, imagens, vídeos e outros conteúdos na internet.",
+                        "Criar redes sociais.",
+                        "Enviar e-mails.",
+                        "Fazer chamadas de vídeo."
+                    ],
+                    correct: "Permitem que os usuários encontrem informações, páginas web, imagens, vídeos e outros conteúdos na internet."
+                },
+                {
+                    question: "O que são 'vírus, worms e pragas virtuais'?",
+                    options: [
+                        "Tipos de softwares de edição de texto.",
+                        "Softwares maliciosos (malware) desenvolvidos para infectar computadores, roubar dados ou causar danos.",
+                        "Ferramentas de otimização de sistema.",
+                        "Programas para navegar na internet.",
+                        "Sistemas de armazenamento em nuvem."
+                    ],
+                    correct: "Softwares maliciosos (malware) desenvolvidos para infectar computadores, roubar dados ou causar danos."
+                },
+                {
+                    question: "Qual a principal função de um 'Sistema Operacional' (ex: Windows, macOS, Linux)?",
+                    options: [
+                        "Apenas para tocar música e vídeos.",
+                        "Gerenciar o hardware e o software do computador, permitindo a execução de programas e a interação do usuário.",
+                        "Criar planilhas eletrônicas.",
+                        "Enviar e-mails corporativos.",
+                        "Desenvolver jogos."
+                    ],
+                    correct: "Gerenciar o hardware e o software do computador, permitindo a execução de programas e a interação do usuário."
+                },
+                {
+                    question: "O que é 'armazenamento em nuvem'?",
+                    options: [
+                        "Guardar arquivos apenas em pen drives.",
+                        "Armazenamento de dados em servidores remotos acessíveis pela internet, sem a necessidade de espaço físico local.",
+                        "Armazenar arquivos em CDs e DVDs.",
+                        "Utilizar a memória RAM para guardar informações.",
+                        "Imprimir todos os documentos e guardá-los em pastas."
+                    ],
+                    correct: "Armazenamento de dados em servidores remotos acessíveis pela internet, sem a necessidade de espaço físico local."
+                },
+                {
+                    question: "Noções de Inteligência Artificial (IA) e Aprendizado de Máquina (Machine Learning e Deep Learning) estão se tornando importantes. Qual o conceito básico de IA?",
+                    options: [
+                        "Criação de robôs que substituem completamente o trabalho humano.",
+                        "Campo da ciência da computação que busca desenvolver sistemas capazes de simular a inteligência humana, como aprendizado e tomada de decisões.",
+                        "Apenas a automação de tarefas simples.",
+                        "Um novo tipo de sistema operacional para computadores antigos.",
+                        "Software que organiza automaticamente os arquivos em uma pasta."
+                    ],
+                    correct: "Campo da ciência da computação que busca desenvolver sistemas capazes de simular a inteligência humana, como aprendizado e tomada de decisões."
+                },
+                {
+                    question: "Qual a diferença entre 'internet' e 'intranet'?",
+                    options: [
+                        "Internet é pública, intranet é uma rede privada de uma organização.",
+                        "Internet é apenas para navegação, intranet é para comunicação.",
+                        "Internet é lenta, intranet é rápida.",
+                        "Internet é com fio, intranet é sem fio.",
+                        "Não há diferença, são sinônimos."
+                    ],
+                    correct: "Internet é pública, intranet é uma rede privada de uma organização."
+                },
+                {
+                    question: "O que é um 'aplicativo' ou 'app'?",
+                    options: [
+                        "Um tipo de hardware para impressoras.",
+                        "Um programa de computador ou software projetado para realizar uma função específica para o usuário.",
+                        "Um cabo de rede de internet.",
+                        "Um tipo de vírus de computador.",
+                        "Um componente físico do computador."
+                    ],
+                    correct: "Um programa de computador ou software projetado para realizar uma função específica para o usuário."
+                },
+                {
+                    question: "Para organizar arquivos e métodos de acesso em um computador, qual a melhor prática?",
+                    options: [
+                        "Salvar tudo na área de trabalho.",
+                        "Criar pastas e subpastas de forma lógica, nomear arquivos descritivamente e utilizar ferramentas de busca.",
+                        "Deixar todos os arquivos em uma única pasta.",
+                        "Renomear os arquivos com datas aleatórias.",
+                        "Apagar arquivos que não são usados há mais de um mês."
+                    ],
+                    correct: "Criar pastas e subpastas de forma lógica, nomear arquivos descritivamente e utilizar ferramentas de busca."
+                },
+                {
+                    question: "Os 'Principais Softwares comerciais' mencionados para Windows (versões 8.1 e mais recentes) e Pacote Office (versões 2010 a mais recentes) são importantes. O que o Pacote Office geralmente inclui?",
+                    options: [
+                        "Apenas navegador de internet e antivírus.",
+                        "Programas como Word (texto), Excel (planilhas), PowerPoint (apresentações) e Outlook (e-mail).",
+                        "Sistemas operacionais e drivers de impressora.",
+                        "Ferramentas de edição de vídeo e áudio.",
+                        "Jogos e aplicativos de redes sociais."
+                    ],
+                    correct: "Programas como Word (texto), Excel (planilhas), PowerPoint (apresentações) e Outlook (e-mail)."
+                },
+                {
+                    question: "O que é um 'arquivo PDF'?",
+                    options: [
+                        "Um arquivo de texto editável como o Word.",
+                        "Um formato de arquivo que preserva a formatação original de documentos, tornando-o ideal para visualização e impressão, mas não para edição fácil.",
+                        "Um arquivo de áudio.",
+                        "Um tipo de imagem animada.",
+                        "Um programa de computador."
+                    ],
+                    correct: "Um formato de arquivo que preserva a formatação original de documentos, tornando-o ideal para visualização e impressão, mas não para edição fácil."
+                },
+                {
+                    question: "Qual a diferença entre 'copiar' e 'recortar' um arquivo ou texto?",
+                    options: [
+                        "Copiar move o original, recortar duplica.",
+                        "Copiar duplica o item original, mantendo-o no local de origem; recortar remove o item do local de origem para ser colado em outro lugar.",
+                        "Recortar é apenas para imagens, copiar é para texto.",
+                        "Não há diferença, são sinônimos.",
+                        "Copiar é mais rápido que recortar."
+                    ],
+                    correct: "Copiar duplica o item original, mantendo-o no local de origem; recortar remove o item do local de origem para ser colado em outro lugar."
+                },
+                {
+                    question: "O que é 'conexão Wi-Fi'?",
+                    options: [
+                        "Uma conexão de internet por cabo.",
+                        "Uma tecnologia que permite a conexão sem fio de dispositivos eletrônicos à internet ou a uma rede local.",
+                        "Um tipo de impressora.",
+                        "Um dispositivo para armazenar dados.",
+                        "Um programa para organizar fotos."
+                    ],
+                    correct: "Uma tecnologia que permite a conexão sem fio de dispositivos eletrônicos à internet ou a uma rede local."
+                },
+                {
+                    question: "Qual a função do 'Firewall' na segurança da rede de computadores?",
+                    options: [
+                        "Acelerar a velocidade da internet.",
+                        "Atuar como uma barreira de segurança, controlando o tráfego de dados e protegendo a rede contra acessos não autorizados e ameaças externas.",
+                        "Organizar os arquivos do sistema.",
+                        "Remover vírus automaticamente.",
+                        "Gerenciar senhas de usuários."
+                    ],
+                    correct: "Atuar como uma barreira de segurança, controlando o tráfego de dados e protegendo a rede contra acessos não autorizados e ameaças externas."
+                },
+                {
+                    question: "O que é 'Machine Learning' (Aprendizado de Máquina) em termos de IA?",
+                    options: [
+                        "Criação de máquinas que imitam robôs de filmes.",
+                        "Subcampo da IA que permite que sistemas aprendam a partir de dados, identifiquem padrões e tomem decisões com mínima intervenção humana.",
+                        "Processo de fabricação de computadores.",
+                        "Um tipo de jogo de videogame.",
+                        "Software que simula conversas humanas."
+                    ],
+                    correct: "Subcampo da IA que permite que sistemas aprendam a partir de dados, identifiquem padrões e tomem decisões com mínima intervenção humana."
+                },
+                {
+                    question: "Para que serve a função 'Imprimir' em um software?",
+                    options: [
+                        "Salvar o documento em PDF.",
+                        "Enviar o documento para uma impressora para reprodução em papel.",
+                        "Visualizar o documento em tela cheia.",
+                        "Compartilhar o documento online.",
+                        "Copiar o texto para a área de transferência."
+                    ],
+                    correct: "Enviar o documento para uma impressora para reprodução em papel."
+                },
+                {
+                    question: "Qual a importância de um 'antivírus' no computador?",
+                    options: [
+                        "Deixar o computador mais rápido.",
+                        "Proteger o sistema contra programas maliciosos (vírus, worms, spywares, etc.) que podem comprometer a segurança e o desempenho.",
+                        "Organizar os ícones da área de trabalho.",
+                        "Fazer backup de arquivos automaticamente.",
+                        "Controlar o acesso à internet."
+                    ],
+                    correct: "Proteger o sistema contra programas maliciosos (vírus, worms, spywares, etc.) que podem comprometer a segurança e o desempenho."
+                },
+                {
+                    question: "O que é uma 'rede local' ou 'LAN' (Local Area Network)?",
+                    options: [
+                        "Uma rede que conecta computadores em todo o mundo.",
+                        "Uma rede de computadores que abrange uma área geográfica limitada, como um escritório ou um prédio.",
+                        "Um tipo de cabo de internet.",
+                        "Um programa para gerenciar servidores.",
+                        "Um sistema de segurança de dados."
+                    ],
+                    correct: "Uma rede de computadores que abrange uma área geográfica limitada, como um escritório ou um prédio."
+                },
+                {
+                    question: "No Microsoft Word, para que serve a opção 'Salvar como'?",
+                    options: [
+                        "Salvar o documento com o mesmo nome e no mesmo local.",
+                        "Salvar uma cópia do documento com um novo nome, em um local diferente ou em um formato diferente, mantendo o original intacto.",
+                        "Abrir um documento existente.",
+                        "Fechar o documento atual.",
+                        "Enviar o documento por e-mail."
+                    ],
+                    correct: "Salvar uma cópia do documento com um novo nome, em um local diferente ou em um formato diferente, mantendo o original intacto."
+                },
+                {
+                    question: "Qual a finalidade de usar um 'pen drive' ou 'USB flash drive'?",
+                    options: [
+                        "Conectar o computador à internet.",
+                        "Armazenar e transportar dados de forma portátil entre computadores.",
+                        "Imprimir documentos.",
+                        "Aumentar a memória RAM do computador.",
+                        "Proteger o computador contra vírus."
+                    ],
+                    correct: "Armazenar e transportar dados de forma portátil entre computadores."
+                },
+                {
+                    question: "O que é 'Deep Learning' (Aprendizado Profundo) em termos de IA?",
+                    options: [
+                        "Um tipo de sono profundo para máquinas.",
+                        "Subárea do Machine Learning que utiliza redes neurais artificiais com múltiplas camadas para aprender representações de dados em vários níveis de abstração.",
+                        "Software para controlar equipamentos de mergulho.",
+                        "Um método para ensinar robôs a falar idiomas.",
+                        "Sistema para analisar dados em profundidade, como um microscópio."
+                    ],
+                    correct: "Subárea do Machine Learning que utiliza redes neurais artificiais com múltiplas camadas para aprender representações de dados em vários níveis de abstração."
+                },
+                {
+                    question: "Para criar apresentações visuais com slides, textos, imagens e gráficos, qual programa do Pacote Office é o mais indicado?",
+                    options: [
+                        "Microsoft Word",
+                        "Microsoft Excel",
+                        "Microsoft PowerPoint",
+                        "Microsoft Outlook",
+                        "Microsoft Access"
+                    ],
+                    correct: "Microsoft PowerPoint"
+                },
+                {
+                    question: "O que é 'cópia de segurança' (backup)?",
+                    options: [
+                        "Copiar um arquivo para a mesma pasta.",
+                        "Criar cópias de arquivos e dados importantes para protegê-los contra perda, corrupção ou falhas de hardware.",
+                        "Apagar arquivos desnecessários.",
+                        "Compartilhar arquivos com amigos.",
+                        "Alterar o nome de um arquivo."
+                    ],
+                    correct: "Criar cópias de arquivos e dados importantes para protegê-los contra perda, corrupção ou falhas de hardware."
+                },
+                {
+                    question: "Qual o benefício de manter o sistema operacional e os softwares atualizados?",
+                    options: [
+                        "Deixar o computador mais lento.",
+                        "Melhorar a segurança, corrigir bugs, otimizar o desempenho e adicionar novas funcionalidades.",
+                        "Aumentar o consumo de energia.",
+                        "Diminuir a vida útil do computador.",
+                        "Excluir arquivos automaticamente."
+                    ],
+                    correct: "Melhorar a segurança, corrigir bugs, otimizar o desempenho e adicionar novas funcionalidades."
+                },
+                {
+                    question: "O que é 'spam' em e-mails?",
+                    options: [
+                        "E-mails importantes de trabalho.",
+                        "Mensagens de e-mail indesejadas e em massa, geralmente com fins publicitários ou maliciosos.",
+                        "E-mails com anexos de fotos.",
+                        "E-mails enviados apenas para uma pessoa.",
+                        "E-mails de recuperação de senha."
+                    ],
+                    correct: "Mensagens de e-mail indesejadas e em massa, geralmente com fins publicitários ou maliciosos."
+                },
+                {
+                    question: "Qual a função da 'Lixeira' no Windows?",
+                    options: [
+                        "Armazenar arquivos permanentemente.",
+                        "Guardar temporariamente arquivos e pastas excluídos, permitindo a recuperação antes da exclusão definitiva.",
+                        "Limpar a memória RAM do computador.",
+                        "Controlar o espaço em disco.",
+                        "Gerenciar senhas."
+                    ],
+                    correct: "Guardar temporariamente arquivos e pastas excluídos, permitindo a recuperação antes da exclusão definitiva."
+                },
+                {
+                    question: "O que é 'phishing' na internet?",
+                    options: [
+                        "Um tipo de jogo de pesca online.",
+                        "Um tipo de golpe em que criminosos tentam obter informações confidenciais (senhas, dados bancários) disfarçando-se como entidades confiáveis em comunicações eletrônicas.",
+                        "Um programa para acelerar downloads.",
+                        "Um sistema de armazenamento de dados.",
+                        "Uma ferramenta para criar sites."
+                    ],
+                    correct: "Um tipo de golpe em que criminosos tentam obter informações confidenciais (senhas, dados bancários) disfarçando-se como entidades confiáveis em comunicações eletrônicas."
+                },
+                {
+                    question: "Qual a importância de um 'nome de usuário' e 'senha' para acessar sistemas?",
+                    options: [
+                        "Apenas para identificar quem usa o computador.",
+                        "Garantir a segurança e a privacidade dos dados, controlando o acesso a sistemas e informações restritas.",
+                        "Deixar o computador mais rápido.",
+                        "Permitir que qualquer pessoa acesse o sistema.",
+                        "Não tem importância, pois todos podem usar."
+                    ],
+                    correct: "Garantir a segurança e a privacidade dos dados, controlando o acesso a sistemas e informações restritas."
+                },
+                {
+                    question: "No Excel, para que serve a função 'SOMA'?",
+                    options: [
+                        "Subtrair valores de células.",
+                        "Calcular a média de um conjunto de números.",
+                        "Somar os valores de um intervalo de células.",
+                        "Multiplicar dois números.",
+                        "Dividir um número por outro."
+                    ],
+                    correct: "Somar os valores de um intervalo de células."
+                }
+            ]
+        };
+
+        const questionsContainer = document.getElementById('questions-container');
+        const submitAllButton = document.getElementById('submit-all-button');
+        const restartButton = document.getElementById('restart-button');
+        const exportButton = document.getElementById('export-button');
+        const finalScreen = document.getElementById('final-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const totalQuestionsDisplay = document.getElementById('total-questions-display');
+        const restartFromFinalButton = document.getElementById('restart-from-final-button');
+
+        let userAnswers = []; // Stores user answers [questionIndex] = selectedOptionIndex
+        let totalScore = 0; // Stores total score
+        let flatQuestions = []; // Flat array of all questions for easy indexing
+
+        /**
+         * Initializes the flat array of questions and the user answer array.
+         * Should be called on page load and when restarting the quiz.
+         */
+        function initializeQuiz() {
+            flatQuestions = [];
+            for (const discipline in allQuestions) {
+                flatQuestions = flatQuestions.concat(allQuestions[discipline]);
+            }
+            userAnswers = Array(flatQuestions.length).fill(null); // Initialize all answers as null
+            totalScore = 0;
+            totalQuestionsDisplay.textContent = flatQuestions.length;
+        }
+
+        /**
+         * Renders all questions on the page.
+         * Clears the questions container before rendering to avoid duplicates.
+         */
+        function renderAllQuestions() {
+            questionsContainer.innerHTML = ''; // Clears the container
+
+            let globalQuestionNumber = 1; // Global counter for question number
+
+            for (const disciplineName in allQuestions) {
+                const disciplineQuestions = allQuestions[disciplineName];
+
+                // Creates the discipline title
+                const disciplineTitle = document.createElement('h2');
+                disciplineTitle.className = 'discipline-title';
+                disciplineTitle.textContent = disciplineName;
+                questionsContainer.appendChild(disciplineTitle);
+
+                disciplineQuestions.forEach((q, localIndex) => {
+                    const questionIndex = flatQuestions.indexOf(q); // Finds the global index of the question
+
+                    const questionCard = document.createElement('div');
+                    questionCard.className = 'question-card';
+                    questionCard.setAttribute('data-question-index', questionIndex); // Stores the global index of the question
+
+                    // Adds the question text with the global number
+                    const questionText = document.createElement('p');
+                    questionText.className = 'question-text';
+                    questionText.textContent = `${globalQuestionNumber}. ${q.question}`;
+                    questionCard.appendChild(questionText);
+
+                    // Creates a container for the options
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options space-y-2'; // Spacing between options
+
+                    q.options.forEach((option, optIndex) => {
+                        const optionId = `q${questionIndex}-opt${optIndex}`;
+                        const label = document.createElement('label');
+                        label.htmlFor = optionId;
+                        label.className = 'option-label';
+
+                        const input = document.createElement('input');
+                        input.type = 'radio';
+                        input.name = `question-${questionIndex}`; // Unique name for each radio group (based on global index)
+                        input.id = optionId;
+                        input.value = optIndex; // The value is the option index
+                        input.className = 'option-input';
+
+                        // Marks the option if it has already been selected by the user
+                        if (userAnswers[questionIndex] === optIndex) {
+                            input.checked = true;
+                        }
+
+                        // Adds listener to save the user's answer
+                        input.addEventListener('change', (event) => {
+                            userAnswers[questionIndex] = parseInt(event.target.value);
+                            // Clears feedback from previous answers when selecting a new option
+                            const feedbackElement = questionCard.querySelector('.feedback');
+                            if (feedbackElement) {
+                                feedbackElement.classList.remove('correct', 'incorrect');
+                                feedbackElement.style.display = 'none';
+                            }
+                        });
+
+                        label.appendChild(input);
+                        label.appendChild(document.createTextNode(` ${String.fromCharCode(97 + optIndex)}) ${option}`)); // Option (a, b, c...)
+                        optionsDiv.appendChild(label);
+                    });
+
+                    questionCard.appendChild(optionsDiv);
+
+                    // Adds an element for feedback (correct/incorrect)
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = 'feedback';
+                    questionCard.appendChild(feedbackDiv);
+
+                    questionsContainer.appendChild(questionCard);
+                    globalQuestionNumber++;
+                });
+            }
+        }
+
+        /**
+         * Checks all user answers, calculates the score
+         * and displays feedback.
+         */
+        function checkAllAnswers() {
+            totalScore = 0;
+            let allAnswered = true; // Flag to check if all questions have been answered
+
+            flatQuestions.forEach((q, index) => {
+                const questionCard = questionsContainer.querySelector(`[data-question-index="${index}"]`);
+                const feedbackDiv = questionCard.querySelector('.feedback');
+                feedbackDiv.style.display = 'block'; // Ensures the feedback div is visible
+
+                const selectedOptionIndex = userAnswers[index];
+
+                if (selectedOptionIndex === null) {
+                    allAnswered = false; // Not all questions have been answered
+                    feedbackDiv.textContent = 'Você não selecionou uma resposta para esta questão.';
+                    feedbackDiv.className = 'feedback incorrect';
+                    // Adds a visual class to indicate that the question has not been answered
+                    questionCard.classList.add('border-red-400', 'border-2');
+                } else {
+                    const selectedAnswer = q.options[selectedOptionIndex];
+                    questionCard.classList.remove('border-red-400', 'border-2'); // Removes red border if present
+
+                    // Displays the correct answer in the feedback
+                    feedbackDiv.textContent = `Resposta Correta: ${q.correct}`;
+
+                    if (selectedAnswer === q.correct) {
+                        totalScore++;
+                        feedbackDiv.classList.remove('incorrect');
+                        feedbackDiv.classList.add('correct');
+                    } else {
+                        feedbackDiv.classList.remove('correct');
+                        feedbackDiv.classList.add('incorrect');
+                    }
+
+                    // Disables the radios after checking to prevent changes
+                    const radios = questionCard.querySelectorAll('input[type="radio"]');
+                    radios.forEach(radio => radio.disabled = true);
+                }
+            });
+
+            if (!allAnswered) {
+                // If not all questions have been answered, display a warning and do not show the final screen
+                alert('Por favor, responda a todas as questões antes de finalizar o simulado.');
+                return;
+            }
+
+            scoreDisplay.textContent = totalScore;
+            finalScreen.classList.remove('hidden');
+            submitAllButton.disabled = true; // Disables the submit button after submission
+        }
+
+        /**
+         * Exports questions, options, and correct answers to a text file.
+         */
+        function exportQuestions() {
+            let exportContent = `--- Simulado Recepcionista - Gabarito ---\n\n`;
+            let globalQuestionNumber = 1;
+
+            for (const disciplineName in allQuestions) {
+                exportContent += `--- ${disciplineName.toUpperCase()} ---\n\n`;
+                allQuestions[disciplineName].forEach((q) => {
+                    exportContent += `${globalQuestionNumber}. ${q.question}\n`;
+                    q.options.forEach((option, optIndex) => {
+                        exportContent += `   ${String.fromCharCode(97 + optIndex)}) ${option}\n`;
+                    });
+                    exportContent += `   Resposta Correta: ${q.correct}\n\n`;
+                    globalQuestionNumber++;
+                });
+            }
+
+            // Creates a Blob with the content and a download link
+            const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'simulado_recepcionista.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Event Listeners
+        submitAllButton.addEventListener('click', checkAllAnswers);
+        restartButton.addEventListener('click', () => {
+            initializeQuiz(); // Re-initializes everything
+            finalScreen.classList.add('hidden'); // Hides the final screen
+            submitAllButton.disabled = false; // Re-enables the submit button
+            renderAllQuestions(); // Rerenders to clear selections and feedback
+        });
+        exportButton.addEventListener('click', exportQuestions);
+        restartFromFinalButton.addEventListener('click', () => {
+            initializeQuiz(); // Re-initializes everything
+            finalScreen.classList.add('hidden'); // Hides the final screen
+            submitAllButton.disabled = false; // Re-enables the submit button
+            renderAllQuestions(); // Rerenders to clear selections and feedback
+        });
+
+        // Initialization on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeQuiz();
+            renderAllQuestions();
+        });
+    </script>
+</body>
+</html>
